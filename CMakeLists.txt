@@ -1,0 +1,85 @@
+cmake_minimum_required(VERSION 3.0)
+project(mcam CXX)
+
+# Prefix
+if (NOT PREFIX)
+    set(PREFIX ${CMAKE_CURRENT_BINARY_DIR})
+endif (NOT PREFIX)
+set(CMAKE_INSTALL_PREFIX ${PREFIX} CACHE STRING "Installation prefix." FORCE)
+
+if (CXX)
+    set(CMAKE_CXX_COMPILER ${CXX})
+endif (CXX)
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
+# Release or Debug
+if (NOT CMAKE_BUILD_TYPE)
+    message(STATUS "Setting build type to 'Debug' as none was specified.")
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+endif ()
+
+
+## localisation du pnl
+set(CMAKE_PREFIX_PATH /home/elga/Documents/ENSIMAG/pnl/build ${CMAKE_PREFIX_PATH})
+
+# Detect PNL
+find_package(Pnl REQUIRED)
+set(LIBS ${LIBS} ${PNL_LIBRARIES})
+include_directories(${PNL_INCLUDE_DIRS})
+if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    add_definitions(-DPNL_RANGE_CHECK_OFF)
+endif()
+
+# Add jlparser
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+if (WIN32)
+    include(CheckCXXCompilerFlag)
+    CHECK_CXX_COMPILER_FLAG("/std:c++latest" _cpp_latest_flag_supported)
+    if (_cpp_latest_flag_supported)
+        add_compile_options("/std:c++latest")
+    endif()
+endif()
+add_subdirectory(src/3rdparty/jlparser)
+
+
+## MON EXECUTABLE GENERAL 
+set(MC_SOURCES src/BlackScholesModel.cpp  src/MonteCarlo.cpp src/BasketOption.cpp src/PerformanceOption.cpp src/GeometricOption.cpp 
+src/PolynomialRegression.cpp)
+set(MC_HEADERS src/BlackScholesModel.hpp  src/MonteCarlo.hpp src/Option.hpp src/BasketOption.hpp src/PerformanceOption.hpp src/GeometricOption.hpp
+src/PolynomialRegression.hpp)
+add_executable(mcam ${MC_SOURCES} ${MC_HEADERS} src/PricingResults.hpp src/PricingResults.cpp src/main.cpp )
+target_link_libraries(mcam jl_parser ${LIBS})
+
+
+### Ne rien modifier dans la partie au dessus de cette ligne.
+
+# Test the parser
+add_executable(test-parser src/test_parser.cpp)
+target_link_libraries(test-parser jl_parser ${LIBS})
+
+add_executable(mc-example src/mc_example.cpp src/PricingResults.cpp)
+target_link_libraries(mc-example jl_parser ${LIBS})
+
+add_executable(test-bs-model src/test_bs_model.cpp src/BlackScholesModel.cpp)
+target_link_libraries(test-bs-model jl_parser ${LIBS})
+
+add_executable(test-basket-payoff src/test_basket_payoff.cpp src/BlackScholesModel.cpp src/BasketOption.cpp)
+target_link_libraries(test-basket-payoff jl_parser ${LIBS})
+
+add_executable(test-perf-payoff src/test_perf_payoff.cpp src/BlackScholesModel.cpp src/PerformanceOption.cpp)
+target_link_libraries(test-perf-payoff jl_parser ${LIBS})
+
+add_executable(test-geom-payoff src/test_geom_payoff.cpp src/BlackScholesModel.cpp src/GeometricOption.cpp)
+target_link_libraries(test-geom-payoff jl_parser ${LIBS})
+
+# Print compiler flags
+get_directory_property(DirDefs COMPILE_DEFINITIONS)
+message(STATUS "COMPILE_DEFINITIONS = ${DirDefs}")
+if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    message(STATUS "C++ Flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_LINKER_EXE_FLAGS}" )
+else()
+    message(STATUS "C++ Flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_LINKER_EXE_FLAGS}" )
+endif()
