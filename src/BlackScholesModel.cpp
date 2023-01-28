@@ -14,8 +14,8 @@ BlackScholesModel::BlackScholesModel(int size, double r, double rho, PnlVect* si
     spot_ = spot;
 
     //Creation de Gamma et de sa factorisation de Cholesky
-    L_ =  pnl_mat_create_from_scalar(size_, size_, rho);
-    pnl_mat_set_diag(L_, 1, 0);
+    L_ =  pnl_mat_create_from_scalar(size_, size_, rho); // A LIBERER 
+    pnl_mat_set_diag(L_, 1., 0);
     pnl_mat_chol(L_);
 }
 
@@ -62,9 +62,9 @@ void BlackScholesModel::assetVect(PnlVect *vect, int j, double T, int dates, Pnl
     for (int i=1; i<vect->size; i++)
     {
         pnl_vect_rng_normal(norm, norm->size, rng);
-        exponent_deterministic = (r_ - pnl_vect_get(divid_, j) - sigma_j*sigma_j/2) * time_step;
+        exponent_deterministic = (r_ - pnl_vect_get(divid_, j) - sigma_j*sigma_j/2) * time_step; // A OPTIMISER 
         exponent_random =  sqrt_time_step * sigma_j * pnl_vect_scalar_prod(L_j, norm);
-        pnl_vect_set(vect, i, pnl_vect_get(vect, i-1) * exp(exponent_deterministic + exponent_random));
+        pnl_vect_set(vect, i, pnl_vect_get(vect, i-1) * exp(exponent_deterministic + exponent_random)); // LA AUSSI 
     }
     pnl_vect_free(&L_j);
     pnl_vect_free(&norm);

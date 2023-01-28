@@ -24,6 +24,8 @@ double MonteCarlo :: price(double T, int nbDates, PnlRng* rng) {
     //
     double tau1 = 0.0;
     double Un = 0.0;  //
+    double U = 0;
+    double sommeU = 0;
     double sommek = 0.0;
     double somme = 0.0;
 
@@ -35,7 +37,7 @@ double MonteCarlo :: price(double T, int nbDates, PnlRng* rng) {
         double payoff1 = 0.;
  /***************************************************************************************/       
         // MONTE CARLO  sur Tau1 : on calcule plusieurs fois Tau1
-        for (int n = 0; n < nbSamples; n++)  { // nbSample3
+        //for (int n = 0; n < nbSamples; n++)  { // nbSample3
 
             PnlVect* Stk = pnl_vect_create(mod_->size_);
             double tau = T;
@@ -48,7 +50,7 @@ double MonteCarlo :: price(double T, int nbDates, PnlRng* rng) {
                 for (int l2 = 0; l2 < nbSamples; l2++) {  // nbSample 2
                         mod_->asset(path, T, nbDates, rng);
                         double payoff2 = opt_->payoff(path, tau); // k*stepDate ou tau ?
-                        pnl_vect_set(dataY, l2, payoff2/nbSamples);
+                        pnl_vect_set(dataY, l2, payoff2);
                         pnl_mat_get_col(Stk, path,  k); // on extrait Stk
                         pnl_mat_set_row(dataX, Stk, l2);
                 }
@@ -61,31 +63,57 @@ double MonteCarlo :: price(double T, int nbDates, PnlRng* rng) {
                 pnl_mat_get_col(Stk, pathMC, k); // on extrait Stk dans pathMC; k ou  int tk = (int)(t * dates_ / T_);
                 double estimation = estimator->eval(coeff, Stk);
                 miseAJourTau(tau, k*stepDate, payoff1, estimation);
-                //std::cout <<"tau :" << tau1 <<" payoff : " << opt_->payoff(pathMC, tau1) << "  esp_Cond : " << estimation << " Z0: " << Z0<< "\n";
+                //tau = ( payoff1 >= estimation) ? k*stepDate : tau;
+                std::cout <<"tau :" << tau <<" payoff : " << payoff1 << "  esp_Cond : " << estimation << " Z0: " << Z0<< "\n";
+                // LIBERER LA MEMOIRE 
             }
     /********************************************************************************/
             // Somme des payoffs au temps d'arret  TAU1
             tau1 = tau;
-            std::cout <<"tau :" << tau1 <<" payoff : " << opt_->payoff(pathMC, tau1) << "\n";
+            //std::cout <<"tau :" << tau1 <<" payoff : " << opt_->payoff(pathMC, tau1) << "\n";
             //std::cout << "tau1 : " << tau1 << "\n";
-            sommek += exp(-mod_->r_ * tau1) * opt_->payoff(pathMC, tau1); // ?actalise
-        }
+            U =  exp(-mod_->r_ * tau1) * opt_->payoff(pathMC, tau1);
+            sommeU += U;
+            //sommek += exp(-mod_->r_ * tau1) * opt_->payoff(pathMC, tau1); // ?actalise
+        //}
         // Un  = une premiere approxiamtion de UO
-        Un = std::max (Z0, sommek / nbSamples);  // nbSample3
+        //Un = std::max (Z0, sommek / nbSamples);  // nbSample3
         // std::cout <<"Un :"<< sommek << "\n";
         // return Un;
-        somme += Un; // moyenne des valeurs de U0
+        //somme += Un; // moyenne des valeurs de U0
+        // MEMOIRE 
     }
     // output 
-    std::cout <<"Un :"<< sommek << "\n";
-    return somme / nbSamples; // nbSample 1
+    //std::cout <<"Un :"<< sommek << "\n";
+    return sommeU / nbSamples; // nbSample 1
     //return Un;
 
     //  MEMOIRE A LIBERER
 }
 
+
+
+double MonteCarlo :: price2(double T, int nbDates, PnlRng* rng) {
+
+
+     int nbFunct = estimator->B->nb_func;
+    double stepDate = T/nbDates;
+    PnlMat* pathMC = pnl_mat_create (mod_->size_ ,nbDates + 1); // pour la boucle MonteCarlo
+    double tau = T;
+    for (int l = 0; l < nbSamples; l ++) {
+        mod_->asset(pathMC, T, nbDates, rng);
+        double Z0 = opt_->payoff(pathMC, 0.0); // a calculer une fois pour optimiser
+
+
+    }
+}
+
+
+
+
+
     void MonteCarlo :: miseAJourTau(double& tau, double tk, double payoff, double Ukplus1) {
-        if (payoff >= Ukplus1) {
+        if (payoff >= std :: max( Ukplus1, 0.0) ) {
             tau = tk;
         }
     }
