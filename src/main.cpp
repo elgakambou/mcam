@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 
     GeometricOption geom(T, nbTimeSteps, size, strike);
     // MC
-    PolynomialRegression estimator(maxDegree, 1); //size
+    PolynomialRegression estimator(maxDegree, size); //size
     // pnl_basis_print(estimator.B);
     // exit(0);
     MonteCarlo mc(&model, &geom, &estimator, 50); //n_samples
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
         std::cout << " option inconnue" << "\n";
         exit(0);
     }
-    double myprice = mc.price(T, nbTimeSteps, rng);
+    double myprice = mc.price2(T, nbTimeSteps, rng);
     std::cout << PricingResults(myprice) << std::endl;
 
 

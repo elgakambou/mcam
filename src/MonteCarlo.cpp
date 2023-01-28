@@ -2,7 +2,7 @@
 #include "MonteCarlo.hpp"
 #include "pnl/pnl_vector.h"
 #include "pnl/pnl_matrix.h"
-
+#include "pnl/pnl_array.h"
 
 
 MonteCarlo::MonteCarlo(BlackScholesModel * mod, Option* opt, Quantifier* estimator,  int nbSamples) {
@@ -93,19 +93,60 @@ double MonteCarlo :: price(double T, int nbDates, PnlRng* rng) {
 
 
 
-double MonteCarlo :: price2(double T, int nbDates, PnlRng* rng) {
-
-
-     int nbFunct = estimator->B->nb_func;
-    double stepDate = T/nbDates;
-    PnlMat* pathMC = pnl_mat_create (mod_->size_ ,nbDates + 1); // pour la boucle MonteCarlo
-    double tau = T;
-    for (int l = 0; l < nbSamples; l ++) {
-        mod_->asset(pathMC, T, nbDates, rng);
-        double Z0 = opt_->payoff(pathMC, 0.0); // a calculer une fois pour optimiser
-
-
+double MonteCarlo :: price2(double T, int nbDates, PnlRng* rng)
+{
+    // Génération des M trajectoires
+    PnlArray* paths = pnl_array_create(nbSamples);
+    for (int l=0; l<nbSamples; l++)
+    {
+        PnlMat* path = pnl_mat_create (mod_->size_ ,nbDates + 1);
+        mod_->asset(path, T, nbDates, rng);
+        pnl_array_set(paths, l, (PnlObject*) path);
     }
+
+    PnlVect* taus_k_1 = pnl_vect_create(nbSamples); // les tau_k+1
+    PnlMat* dataX = pnl_mat_create (nbSamples, mod_->size_); // vecteurs des Stk
+    PnlVect* dataY = pnl_vect_create(nbSamples); // vecteurs des payoff
+    PnlVect* coeff = pnl_vect_create(estimator->B->nb_func); // vecteur alpha_k 
+    PnlMat* taus = pnl_mat_create_from_scalar(nbSamples, nbDates+1, T); // matrice des tau
+    PnlVect* S_tk_l = pnl_vect_create(mod_->size_); // les S_tk^l utilisés pour construire dataX
+    PnlVect* payoffs_tk = pnl_vect_create(nbSamples); // les payoffs en tk
+    PnlVect* estimations_tk = pnl_vect_create(nbSamples); // les alpha_k * H_k(Stk)
+    
+    for (int k = nbDates - 1; k >=1 ; k--)
+    {
+        // Construction de dataX, dataY:
+        pnl_mat_get_col(taus_k_1, taus, k+1); // on récupère les tau_k+1
+        for (int l = 0; l<nbSamples; l++)
+        {
+            pnl_mat_get_col(S_tk_l, (PnlMat*) pnl_array_get(paths, l), k);
+            pnl_mat_set_row(dataX, S_tk_l, l);
+            pnl_vect_set(dataY, l, opt_->payoff((PnlMat*) pnl_array_get(paths, l), pnl_vect_get(taus_k_1, l)));        
+            pnl_vect_set(payoffs_tk, l, opt_->payoff((PnlMat*) pnl_array_get(paths, l), k*T/nbDates));
+        }
+        
+        // Optimisation:
+        estimator->estimate(dataX, dataY, coeff);
+
+        // MAJ des taus_k:
+        for (int l=0; l<nbSamples; l++)
+        {    
+            pnl_mat_get_col(S_tk_l, (PnlMat*) pnl_array_get(paths, l), k); // on récup les Stk^l
+            pnl_vect_set(estimations_tk, l, estimator->eval(coeff, S_tk_l)); // on calcule alpha_k H_k(Stk^l) 
+            if (pnl_vect_get(payoffs_tk, l) > std::max(pnl_vect_get(estimations_tk, l), 0.0))
+                pnl_mat_set(taus, l, k, k*T/nbDates);            
+            else
+                pnl_mat_set(taus, l, k, pnl_mat_get(taus, l, k+1));
+        }
+    }
+    double tau1, Un_1, prix=0.0;
+    for (int l=0; l<nbSamples; l++)
+    {
+        tau1 = pnl_mat_get(taus, l, 1);
+        Un_1 = exp(-mod_->r_ * tau1) * opt_->payoff((PnlMat*) pnl_array_get(paths, l), tau1);    
+        prix += std::max (opt_->payoff((PnlMat*) pnl_array_get(paths, l), 0.0), Un_1);
+    }
+    return prix/nbSamples;
 }
 
 
