@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     PnlVect *sigma, *divid, *spot, *lambda;
     string type ;
 
-    Param *P = new Parser(argv[1]);
+    Param *P = new Parser("/home/hanriotr/Scholar/3A/OA/mcam/dat/geom_d2.txt");
     P->extract("maturity", T);
     P->extract("model size", size);
     P->extract("spot", spot, size);
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
     PolynomialRegression estimator(maxDegree, size); //size
     // pnl_basis_print(estimator.B);
     // exit(0);
-    MonteCarlo mc(&model, &geom, &estimator, 50); //n_samples
+    MonteCarlo mc(&model, &geom, &estimator, n_samples); //n_samples
 
     // l'option 
     if (type == "exchange") {

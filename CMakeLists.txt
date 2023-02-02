@@ -21,7 +21,7 @@ endif ()
 
 
 ## localisation du pnl
-set(CMAKE_PREFIX_PATH /home/elga/Documents/ENSIMAG/pnl/build ${CMAKE_PREFIX_PATH})
+set(CMAKE_PREFIX_PATH /home/hanriotr/Playground/pnl/build/ ${CMAKE_PREFIX_PATH})
 
 # Detect PNL
 find_package(Pnl REQUIRED)

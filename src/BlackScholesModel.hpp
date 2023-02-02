@@ -25,7 +25,7 @@ public:
      * @param[in] T  maturité
      * @param[in] nbTimeSteps nombre de dates de constatation
      */
-    void asset(PnlMat *path, double T, int dates, PnlRng *rng); // d x (nbTimeSteps+1) 
+    void asset(PnlMat *path, double T, int dates, PnlRng *rng); // d x (nbTimeSteps+1)
     void asset2(PnlMat *path, double T, int dates, PnlRng *rng); // (nbTimeSteps+1) x d
 
 
@@ -37,6 +37,6 @@ public:
      * @param[in] T  maturité
      * @param[in] nbTimeSteps nombre de dates de constatation
      */
-    void assetVect(PnlVect *vect, int j, double T, int dates, PnlRng *rng);
+    void assetVect(PnlVect *vect, int i, double T, int dates, PnlMat* norm);
     
 };
