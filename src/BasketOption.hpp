@@ -11,7 +11,7 @@ public:
     double strike_; // strike, un réel (le cas K <= correspond à un put)
     PnlVect* lambda_; // lambda, un vecteur de réels
     BasketOption(double T, int dates, int size, double strike, PnlVect* lambda);
-    double payoff(const PnlMat *path, double t);
+    double payoff(const PnlVect *spots);
 };
 
 

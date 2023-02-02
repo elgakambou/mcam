@@ -86,7 +86,7 @@ int main(int argc, char **argv)
         std::cout << " option inconnue" << "\n";
         exit(0);
     }
-    double myprice = mc.price2(T, nbTimeSteps, rng);
+    double myprice = mc.price(T, nbTimeSteps, rng);
     std::cout << PricingResults(myprice) << std::endl;
 
 

@@ -8,7 +8,7 @@ class GeometricOption : public Option
 public:
     double strike_; // strike > 0
     GeometricOption(double T, int dates, int size, double strike);
-    double payoff(const PnlMat *path, double t);
+    double payoff(const PnlVect *spots);
 };
 
 

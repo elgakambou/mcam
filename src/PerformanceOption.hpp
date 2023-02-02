@@ -11,5 +11,5 @@ public:
     double strike_; // strike > 0
     PnlVect* lambda_; // lambda, un vecteur de réels
     PerformanceOption(double T, int dates, int size, double strike, PnlVect* lambda);
-    double payoff(const PnlMat *path, double t);
+    double payoff(const PnlVect *spots);
 };

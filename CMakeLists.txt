@@ -63,17 +63,17 @@ target_link_libraries(test-parser jl_parser ${LIBS})
 add_executable(mc-example src/mc_example.cpp src/PricingResults.cpp)
 target_link_libraries(mc-example jl_parser ${LIBS})
 
-add_executable(test-bs-model src/test_bs_model.cpp src/BlackScholesModel.cpp)
-target_link_libraries(test-bs-model jl_parser ${LIBS})
+# add_executable(test-bs-model src/test_bs_model.cpp src/BlackScholesModel.cpp)
+# target_link_libraries(test-bs-model jl_parser ${LIBS})
 
-add_executable(test-basket-payoff src/test_basket_payoff.cpp src/BlackScholesModel.cpp src/BasketOption.cpp)
-target_link_libraries(test-basket-payoff jl_parser ${LIBS})
+# add_executable(test-basket-payoff src/test_basket_payoff.cpp src/BlackScholesModel.cpp src/BasketOption.cpp)
+# target_link_libraries(test-basket-payoff jl_parser ${LIBS})
 
-add_executable(test-perf-payoff src/test_perf_payoff.cpp src/BlackScholesModel.cpp src/PerformanceOption.cpp)
-target_link_libraries(test-perf-payoff jl_parser ${LIBS})
+# add_executable(test-perf-payoff src/test_perf_payoff.cpp src/BlackScholesModel.cpp src/PerformanceOption.cpp)
+# target_link_libraries(test-perf-payoff jl_parser ${LIBS})
 
-add_executable(test-geom-payoff src/test_geom_payoff.cpp src/BlackScholesModel.cpp src/GeometricOption.cpp)
-target_link_libraries(test-geom-payoff jl_parser ${LIBS})
+# add_executable(test-geom-payoff src/test_geom_payoff.cpp src/BlackScholesModel.cpp src/GeometricOption.cpp)
+# target_link_libraries(test-geom-payoff jl_parser ${LIBS})
 
 # Print compiler flags
 get_directory_property(DirDefs COMPILE_DEFINITIONS)

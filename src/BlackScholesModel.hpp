@@ -26,17 +26,4 @@ public:
      * @param[in] nbTimeSteps nombre de dates de constatation
      */
     void asset(PnlMat *path, double T, int dates, PnlRng *rng); // d x (nbTimeSteps+1)
-    void asset2(PnlMat *path, double T, int dates, PnlRng *rng); // (nbTimeSteps+1) x d
-
-
-    /**
-     * Génère une trajectoire du modèle et la stocke dans vect
-     *
-     * @param[out] path contient une trajectoire du modèle.
-     * C'est un vecteur de taille nbTimeSteps+1
-     * @param[in] T  maturité
-     * @param[in] nbTimeSteps nombre de dates de constatation
-     */
-    void assetVect(PnlVect *vect, int i, double T, int dates, PnlMat* norm);
-    
 };

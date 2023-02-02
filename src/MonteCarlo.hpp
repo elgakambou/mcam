@@ -19,9 +19,6 @@ public:
      * @return valeur de l'estimateur Monte Carlo
      */
     double price(double T, int nbDates, PnlRng* rng);
-    double price2(double T, int nbDates, PnlRng* rng);
-    void miseAJourTau(double& tau, double tk, double payoff, double Ukplus1);
-
 };
 
 

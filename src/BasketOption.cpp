@@ -12,12 +12,7 @@ BasketOption::BasketOption(double T, int dates, int size, double strike, PnlVect
     lambda_ = lambda;
 }
 
-double BasketOption::payoff(const PnlMat *path, double t)
+double BasketOption::payoff(const PnlVect *spots)
 {
-    int tk = (int)(t * dates_ / T_);
-    PnlVect *Stk = pnl_vect_create(size_);
-    pnl_mat_get_row(Stk, path, tk);
-    double sum = pnl_vect_scalar_prod(lambda_, Stk);
-    pnl_vect_free(&Stk);
-    return max(sum - strike_, 0.0);
+    return max(pnl_vect_scalar_prod(lambda_, spots) - strike_, 0.0);
 }
