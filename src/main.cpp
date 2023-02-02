@@ -26,7 +26,8 @@ int main(int argc, char **argv)
     PnlVect *sigma, *divid, *spot, *lambda;
     string type ;
 
-    Param *P = new Parser("/home/hanriotr/Scholar/3A/OA/mcam/dat/geom_d2.txt");
+    // Param *P = new Parser("/home/hanriotr/Scholar/3A/OA/mcam/dat/geom_d2.txt");
+    Param *P = new Parser(argv[1]);
     P->extract("maturity", T);
     P->extract("model size", size);
     P->extract("spot", spot, size);
