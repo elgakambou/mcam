@@ -92,6 +92,9 @@ int main(int argc, char **argv)
 
 
     //pnl_mat_free(&path);
+    model.~BlackScholesModel();
+    estimator.~PolynomialRegression();
+
     pnl_rng_free(&rng);
     return 0;
 }

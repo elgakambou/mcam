@@ -11,6 +11,7 @@ class PolynomialRegression :  public Quantifier {
         PolynomialRegression(int maxDegree, int sizeOfX);
         void estimate ( PnlMat* dataX, PnlVect* dataY, PnlVect* coeff);
         double eval(const PnlVect* coeff, const PnlVect* x);
+        ~PolynomialRegression(); 
     private :
         PnlMat* m_dataX;
         PnlVect* m_dataY;

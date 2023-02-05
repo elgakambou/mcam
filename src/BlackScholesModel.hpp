@@ -26,4 +26,5 @@ public:
      * @param[in] nbTimeSteps nombre de dates de constatation
      */
     void asset(PnlMat *path, double T, int dates, PnlRng *rng); // d x (nbTimeSteps+1)
+    ~BlackScholesModel(); 
 };

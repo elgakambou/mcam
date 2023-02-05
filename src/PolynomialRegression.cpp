@@ -9,10 +9,14 @@ PolynomialRegression :: PolynomialRegression(int maxDegree,  int sizeOfX) {
 }
 
 
-void PolynomialRegression ::  estimate (PnlMat* dataX, PnlVect* dataY, PnlVect* coeff)  {
+void PolynomialRegression :: estimate (PnlMat* dataX, PnlVect* dataY, PnlVect* coeff)  {
     pnl_basis_fit_ls (this->B, coeff, dataX, dataY);
 }
 
  double PolynomialRegression :: eval(const PnlVect* coeff, const PnlVect* x) {
             return pnl_basis_eval_vect (this->B, coeff, x) ;
  }
+
+PolynomialRegression :: ~PolynomialRegression() {
+            pnl_basis_free(&B);
+        }

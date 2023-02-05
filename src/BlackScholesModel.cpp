@@ -42,3 +42,8 @@ void BlackScholesModel::asset(PnlMat *path, double T, int dates, PnlRng *rng)
     pnl_vect_free(&norm);
     pnl_vect_free(&L_j);
 }
+
+
+BlackScholesModel :: ~BlackScholesModel() {
+    pnl_mat_free(&L_);
+}
