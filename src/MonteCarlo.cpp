@@ -39,32 +39,26 @@ double MonteCarlo :: price(double T, int nbDates, PnlRng* rng)
     for (int k = nbDates - 1; k >=1 ; k--)
     {
         // Construction de dataX, dataY:
-        int compteur = 0; // le nombre de data dans la monnaie
+        int l = 0; // le nombre de data dans la monnaie
         for (int l = 0; l<nbSamples; l++)
         {
             tau_k_l_1 = pnl_vect_get(taus_k_1, l);
             path_l = (PnlMat*) pnl_array_get(paths, l);
             pnl_mat_get_row(S_tau_k_l_1, path_l, tau_k_l_1); // (int) (tau_k_l_1 / timeStep)
-            double payoff = exp(-mod_->r_ * tau_k_l_1*timeStep) * opt_->payoff(S_tau_k_l_1); // tau_k_l_1
-            
-            if (payoff > 0) // filtre dans la monnaie 
-            { 
-                pnl_mat_get_row(S_tk_l, path_l, k);
-                pnl_mat_set_row(dataX, S_tk_l, compteur);      
-                pnl_vect_set(dataY, compteur, payoff);
-                compteur ++;
-            }
-
+            double payoff = exp(-mod_->r_ * tau_k_l_1*timeStep) * opt_->payoff(S_tau_k_l_1); // tau_k_l_1         
+            pnl_mat_get_row(S_tk_l, path_l, k);
+            pnl_mat_set_row(dataX, S_tk_l, l);      
+            pnl_vect_set(dataY, l, payoff);         
         }
-        //std::cout << compteur << " "  << nbSamples << "\n";
-        PnlMat* dataX_on = pnl_mat_create (compteur, mod_->size_); // vecteurs des Stk
-        PnlVect* dataY_on = pnl_vect_create(compteur); // vecteurs des payoff
-        pnl_mat_extract_subblock (dataX_on, dataX, 0, compteur, 0, mod_->size_);
-        pnl_vect_extract_subvect(dataY_on, dataY, 0, compteur);
+        // //std::cout << compteur << " "  << nbSamples << "\n";
+        // PnlMat* dataX_on = pnl_mat_create (compteur, mod_->size_); // vecteurs des Stk
+        // PnlVect* dataY_on = pnl_vect_create(compteur); // vecteurs des payoff
+        // pnl_mat_extract_subblock (dataX_on, dataX, 0, compteur, 0, mod_->size_);
+        // pnl_vect_extract_subvect(dataY_on, dataY, 0, compteur);
        
         
         // Optimisation:
-        estimator->estimate(dataX_on, dataY_on, coeff);
+        estimator->estimate(dataX, dataY, coeff);
         //pnl_vect_print(coeff);
 
         // MAJ des taus_k:
@@ -76,8 +70,6 @@ double MonteCarlo :: price(double T, int nbDates, PnlRng* rng)
             if (payoff_tk_l >= std::max(estimator->eval(coeff, S_tk_l), 0.0))
                 pnl_vect_set(taus_k_1, l, k ); // (double) k * timeStep
         }
-        pnl_mat_free(&dataX_on);
-        pnl_vect_free(&dataY_on);
     }
     
     double tau1 = 0.;
@@ -88,8 +80,8 @@ double MonteCarlo :: price(double T, int nbDates, PnlRng* rng)
         tau1 = pnl_vect_get(taus_k_1, l); // indice
         pnl_mat_get_row(S_tau_k_l_1, path_l, tau1 ); // (int) (tau1 / timeStep)
         payoff += exp(-mod_->r_ * tau1 * timeStep) * opt_->payoff(S_tau_k_l_1);
+        std :: cout << "payoff : " << payoff << "\n";
     }
-
     pnl_vect_free(&taus_k_1);
     pnl_vect_free(&dataY);
     pnl_vect_free(&coeff);
@@ -98,6 +90,9 @@ double MonteCarlo :: price(double T, int nbDates, PnlRng* rng)
     pnl_mat_free(&dataX);
     pnl_array_free(&paths);
 
+    double Z0 = opt_->payoff(mod_->spot_);
+    double esp  = payoff / nbSamples;
+    std :: cout << "Z0 : " << Z0 << " esp : " << esp << "\n";
     return std::max(opt_->payoff(mod_->spot_), payoff / nbSamples);
 }
 
