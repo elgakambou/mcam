@@ -13,5 +13,5 @@ GeometricOption::GeometricOption(double T, int dates, int size, double strike)
 
 double GeometricOption::payoff(const PnlVect *spots)
 {
-    return max(strike_ - pow(pnl_vect_prod(spots), (double)1.0 / ((double)size_)), 0.0);
+    return max(strike_ - pow(pnl_vect_prod(spots), 1.0 / ((double)size_)), 0.0);
 }
