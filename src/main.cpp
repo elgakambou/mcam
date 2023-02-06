@@ -12,6 +12,7 @@
 #include "Quantifier.hpp"
 #include "PolynomialRegression.hpp"
 #include "PricingResults.hpp"
+#include "Option.hpp"
 
 using namespace std;
 
@@ -26,7 +27,7 @@ int main(int argc, char **argv)
     PnlVect *sigma, *divid, *spot, *lambda;
     string type ;
 
-    // Param *P = new Parser("/home/hanriotr/Scholar/3A/OA/mcam/dat/geom_d2.txt");
+    // Param *P = new Parser("/home/hanriotr/Scholar/3A/OA/mcam/dat/put.txt");
     Param *P = new Parser(argv[1]);
     P->extract("maturity", T);
     P->extract("model size", size);
@@ -42,6 +43,7 @@ int main(int argc, char **argv)
     P->extract("dates", nbTimeSteps);
     P->extract("MC iterations", n_samples);
     P->extract("degree for polynomial regression", maxDegree);
+    P->extract("correlation", rho);
 
     // test print 
     // cout << "option type " << type << endl;
@@ -61,40 +63,36 @@ int main(int argc, char **argv)
     //model.asset(path, T, nbTimeSteps, rng);
     //pnl_mat_print(path);
 
-    GeometricOption geom(T, nbTimeSteps, size, strike);
-    // MC
+    Option* opt;
+
     PolynomialRegression estimator(maxDegree, size); //size
     // pnl_basis_print(estimator.B);
     // exit(0);
-    MonteCarlo mc(&model, &geom, &estimator, n_samples); //n_samples
 
     // l'option 
     if (type == "exchange") {
         P->extract("payoff coefficients", lambda, size);
-        BasketOption basket(T, nbTimeSteps, size, strike, lambda);
-        mc.opt_ = &basket;
+        opt = new BasketOption(T, nbTimeSteps, size, strike, lambda);
     }
     else if (type == "geometric_put"){
-        mc.opt_ = &geom;
+        opt = new GeometricOption(T, nbTimeSteps, size, strike);
     }
     else if (type == "bestof") {
         P->extract("payoff coefficients", lambda, size);
-        PerformanceOption perf(T, nbTimeSteps, size, strike, lambda);
-        mc.opt_ = &perf;
-
+        opt = new PerformanceOption(T, nbTimeSteps, size, strike, lambda); 
     }
     else {
         std::cout << " option inconnue" << "\n";
-        exit(0);
+        exit(1);
     }
+    MonteCarlo mc(&model, opt, &estimator, n_samples); //n_samples
     double myprice = mc.price(T, nbTimeSteps, rng);
     std::cout << PricingResults(myprice) << std::endl;
 
 
     //pnl_mat_free(&path);
-    model.~BlackScholesModel();
-    estimator.~PolynomialRegression();
-
     pnl_rng_free(&rng);
+    delete(opt);
+    delete(P);
     return 0;
 }
